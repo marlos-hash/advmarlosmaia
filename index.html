@@ -446,5 +446,745 @@
       <div class="footer-copy">Marlos Maia Sociedade Individual de Advocacia</div>
     </div>
   </footer>
+<div id="chatbot-container" class="chatbot-hidden">
+        <!-- Widget Flutuante -->
+        <div id="chatbot-button" class="chatbot-button">
+            💬
+        </div>
+
+        <!-- Janela do Chat -->
+        <div id="chatbot-window" class="chatbot-window">
+            <!-- Header -->
+            <div class="chatbot-header">
+                <div class="chatbot-header-content">
+                    <div class="chatbot-logo">M</div>
+                    <div class="chatbot-header-info">
+                        <h3>Marlos Maia Advocacia</h3>
+                        <p>Assistente de Triagem</p>
+                        <div class="chatbot-status">🟢 Online</div>
+                    </div>
+                </div>
+                <button id="chatbot-close" class="chatbot-close">✕</button>
+            </div>
+
+            <!-- Progress Bar -->
+            <div class="chatbot-progress">
+                <div class="chatbot-progress-label">TRIAGEM EM ANDAMENTO</div>
+                <div class="chatbot-progress-bar">
+                    <div id="chatbot-progress-fill" class="chatbot-progress-fill"></div>
+                </div>
+                <div class="chatbot-progress-percent" id="chatbot-percent">0%</div>
+            </div>
+
+            <!-- Chat Messages -->
+            <div id="chatbot-messages" class="chatbot-messages"></div>
+
+            <!-- Input Area -->
+            <div id="chatbot-input-area" class="chatbot-input-area">
+                <input 
+                    type="text" 
+                    id="chatbot-input" 
+                    class="chatbot-input" 
+                    placeholder="Digite sua resposta..."
+                    style="display: none;"
+                >
+                <div id="chatbot-options" class="chatbot-options"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- CSS DO CHATBOT -->
+    <style>
+        .chatbot-hidden {
+            --primary-color: #0b1222;
+            --secondary-color: #d4af37;
+            --light-bg: #f5f5f5;
+            --text-dark: #333;
+            --border-radius: 12px;
+        }
+
+        .chatbot-button {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            width: 60px;
+            height: 60px;
+            background: var(--secondary-color);
+            border: none;
+            border-radius: 50%;
+            font-size: 28px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            transition: all 0.3s ease;
+            z-index: 999;
+        }
+
+        .chatbot-button:hover {
+            transform: scale(1.1);
+            box-shadow: 0 6px 16px rgba(212, 175, 55, 0.3);
+        }
+
+        .chatbot-button.hidden {
+            display: none;
+        }
+
+        .chatbot-window {
+            position: fixed;
+            bottom: 90px;
+            right: 20px;
+            width: 380px;
+            height: 600px;
+            background: white;
+            border-radius: var(--border-radius);
+            box-shadow: 0 5px 40px rgba(0, 0, 0, 0.16);
+            display: flex;
+            flex-direction: column;
+            z-index: 998;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            opacity: 0;
+            transform: translateY(20px);
+            pointer-events: none;
+            transition: all 0.3s ease;
+        }
+
+        .chatbot-window.open {
+            opacity: 1;
+            transform: translateY(0);
+            pointer-events: all;
+        }
+
+        .chatbot-header {
+            background: linear-gradient(135deg, #0b1222 0%, #1a2a3a 100%);
+            color: white;
+            padding: 16px;
+            border-radius: var(--border-radius) var(--border-radius) 0 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .chatbot-header-content {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+        }
+
+        .chatbot-logo {
+            width: 48px;
+            height: 48px;
+            background: var(--secondary-color);
+            color: var(--primary-color);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 20px;
+        }
+
+        .chatbot-header-info h3 {
+            margin: 0;
+            font-size: 14px;
+            font-weight: 600;
+        }
+
+        .chatbot-header-info p {
+            margin: 4px 0 0 0;
+            font-size: 12px;
+            opacity: 0.8;
+        }
+
+        .chatbot-status {
+            font-size: 11px;
+            margin-top: 4px;
+        }
+
+        .chatbot-close {
+            background: none;
+            border: none;
+            color: white;
+            font-size: 20px;
+            cursor: pointer;
+            padding: 0;
+            width: 30px;
+            height: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+        }
+
+        .chatbot-close:hover {
+            transform: scale(1.2);
+        }
+
+        .chatbot-progress {
+            background: #f9f9f9;
+            padding: 12px 16px;
+            border-bottom: 1px solid #e0e0e0;
+            font-size: 11px;
+            text-transform: uppercase;
+            color: #666;
+            letter-spacing: 0.5px;
+        }
+
+        .chatbot-progress-label {
+            margin-bottom: 8px;
+            font-weight: 600;
+        }
+
+        .chatbot-progress-bar {
+            background: #e0e0e0;
+            height: 6px;
+            border-radius: 3px;
+            overflow: hidden;
+            margin-bottom: 8px;
+            position: relative;
+        }
+
+        .chatbot-progress-fill {
+            background: var(--secondary-color);
+            height: 100%;
+            width: 0%;
+            transition: width 0.3s ease;
+            border-radius: 3px;
+        }
+
+        .chatbot-progress-percent {
+            text-align: right;
+            font-weight: 600;
+            color: var(--secondary-color);
+        }
+
+        .chatbot-messages {
+            flex: 1;
+            overflow-y: auto;
+            padding: 16px;
+            background: white;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .chatbot-message {
+            display: flex;
+            gap: 8px;
+            animation: slideIn 0.3s ease;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .chatbot-message.user {
+            justify-content: flex-end;
+        }
+
+        .chatbot-message.bot {
+            justify-content: flex-start;
+        }
+
+        .chatbot-bubble {
+            max-width: 70%;
+            padding: 12px 16px;
+            border-radius: 12px;
+            word-wrap: break-word;
+            line-height: 1.4;
+            font-size: 14px;
+        }
+
+        .chatbot-message.bot .chatbot-bubble {
+            background: #f0f0f0;
+            color: var(--text-dark);
+            border-bottom-left-radius: 4px;
+        }
+
+        .chatbot-message.user .chatbot-bubble {
+            background: var(--primary-color);
+            color: white;
+            border-bottom-right-radius: 4px;
+        }
+
+        .chatbot-avatar {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background: var(--secondary-color);
+            color: var(--primary-color);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 14px;
+            flex-shrink: 0;
+        }
+
+        .chatbot-input-area {
+            padding: 12px 16px;
+            border-top: 1px solid #e0e0e0;
+            background: white;
+            border-radius: 0 0 var(--border-radius) var(--border-radius);
+        }
+
+        .chatbot-input {
+            width: 100%;
+            padding: 10px 12px;
+            border: 1px solid #d0d0d0;
+            border-radius: 6px;
+            font-family: inherit;
+            font-size: 14px;
+            transition: border-color 0.2s;
+        }
+
+        .chatbot-input:focus {
+            outline: none;
+            border-color: var(--secondary-color);
+            box-shadow: 0 0 0 3px rgba(212, 175, 55, 0.1);
+        }
+
+        .chatbot-options {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .chatbot-option {
+            padding: 12px 14px;
+            border: 1px solid #d0d0d0;
+            border-radius: 8px;
+            background: white;
+            color: var(--text-dark);
+            cursor: pointer;
+            font-size: 13px;
+            transition: all 0.2s;
+            text-align: left;
+            font-family: inherit;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .chatbot-option:hover {
+            background: #f9f9f9;
+            border-color: var(--secondary-color);
+            color: var(--primary-color);
+            font-weight: 500;
+        }
+
+        .chatbot-option.selected {
+            background: var(--primary-color);
+            color: white;
+            border-color: var(--primary-color);
+        }
+
+        .chatbot-option-icon {
+            font-size: 18px;
+            min-width: 24px;
+        }
+
+        .chatbot-option-text {
+            flex: 1;
+        }
+
+        .chatbot-messages::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .chatbot-messages::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 3px;
+        }
+
+        .chatbot-messages::-webkit-scrollbar-thumb {
+            background: #ccc;
+            border-radius: 3px;
+        }
+
+        .chatbot-messages::-webkit-scrollbar-thumb:hover {
+            background: #999;
+        }
+
+        @media (max-width: 480px) {
+            .chatbot-window {
+                width: calc(100% - 40px);
+                height: 80vh;
+                max-height: 600px;
+            }
+
+            .chatbot-bubble {
+                max-width: 85%;
+            }
+        }
+    </style>
+<script>
+        class ChatbotIA {
+            constructor() {
+                this.currentStep = 0;
+                this.userData = {};
+                this.apiUrl = 'http://localhost:3001/api/chatbot';
+                
+                this.allSteps = [
+                    {
+                        id: 'nome',
+                        question: 'Como é o seu nome completo?',
+                        type: 'text',
+                        key: 'nome',
+                        icon: '👤',
+                        required: true
+                    },
+                    {
+                        id: 'tipo',
+                        question: 'Você é pessoa física ou representante de empresa?',
+                        type: 'options',
+                        key: 'tipo',
+                        icon: '🔍',
+                        required: true,
+                        options: [
+                            { text: 'Pessoa física', value: 'pf', icon: '👤' },
+                            { text: 'Representante de empresa / Sócio / Holding', value: 'empresa', icon: '🏢' },
+                        ]
+                    },
+                    {
+                        id: 'posicao',
+                        question: 'Você atua como:',
+                        type: 'options',
+                        key: 'posicao',
+                        icon: '💼',
+                        showIf: { key: 'tipo', value: 'empresa' },
+                        required: true,
+                        options: [
+                            { text: 'Sócio ou administrador de empresa', value: 'socio', icon: '📊' },
+                            { text: 'Grupo empresarial / Holding', value: 'holding', icon: '🏢' },
+                        ]
+                    },
+                    {
+                        id: 'porte',
+                        question: 'Qual o porte da empresa ou volume patrimonial envolvido?',
+                        type: 'options',
+                        key: 'porte',
+                        icon: '📈',
+                        showIf: { key: 'tipo', value: 'empresa' },
+                        required: true,
+                        options: [
+                            { text: 'Pequena empresa / MEI', value: 'pequena', icon: '■' },
+                            { text: 'Empresa de médio porte', value: 'medio', icon: '■' },
+                            { text: 'Empresa de grande porte', value: 'grande', icon: '■' },
+                            { text: 'Patrimônio familiar relevante', value: 'patrimonio', icon: '💰' },
+                        ]
+                    },
+                    {
+                        id: 'area',
+                        question: 'Qual área melhor descreve a demanda?',
+                        type: 'options',
+                        key: 'area',
+                        icon: '⚖️',
+                        required: true,
+                        options: [
+                            { text: 'Conflito entre sócios', value: 'conflito', icon: '⚖️' },
+                            { text: 'Planejamento patrimonial / Holding', value: 'planejamento', icon: '🏛️' },
+                            { text: 'Execução fiscal / Receita Federal', value: 'fiscal', icon: '📋' },
+                            { text: 'Direito do Trabalho', value: 'trabalho', icon: '👷' },
+                            { text: 'Outro', value: 'outro', icon: '❓' },
+                        ]
+                    },
+                    {
+                        id: 'whatsapp',
+                        question: 'Informe seu WhatsApp com DDD:',
+                        type: 'phone',
+                        key: 'whatsapp',
+                        icon: '📱',
+                        required: true,
+                        placeholder: '(43) 9 9999-9999'
+                    }
+                ];
+
+                this.steps = this.allSteps;
+                this.initializeDOM();
+                this.bindEvents();
+                this.startChat();
+            }
+
+            initializeDOM() {
+                this.button = document.getElementById('chatbot-button');
+                this.window = document.getElementById('chatbot-window');
+                this.closeBtn = document.getElementById('chatbot-close');
+                this.messagesContainer = document.getElementById('chatbot-messages');
+                this.inputArea = document.getElementById('chatbot-input-area');
+                this.input = document.getElementById('chatbot-input');
+                this.optionsContainer = document.getElementById('chatbot-options');
+                this.progressFill = document.getElementById('chatbot-progress-fill');
+                this.progressPercent = document.getElementById('chatbot-percent');
+            }
+
+            bindEvents() {
+                this.button.addEventListener('click', () => this.toggleWindow());
+                this.closeBtn.addEventListener('click', () => this.toggleWindow());
+                this.input.addEventListener('keypress', (e) => {
+                    if (e.key === 'Enter') this.handleTextInput();
+                });
+            }
+
+            toggleWindow() {
+                this.window.classList.toggle('open');
+                this.button.classList.toggle('hidden');
+            }
+
+            startChat() {
+                this.currentStep = 0;
+                this.userData = {};
+                this.messagesContainer.innerHTML = '';
+                this.optionsContainer.innerHTML = '';
+                
+                this.addMessage(
+                    'bot',
+                    'Bom dia. Sou o assistente institucional do escritório Marlos Maia Advocacia\n\nPara conduzir a triagem inicial com precisão, precisarei de algumas informações.'
+                );
+                
+                setTimeout(() => this.showStep(), 800);
+            }
+
+            getCurrentVisibleStep() {
+                let visibleIndex = 0;
+                for (let i = 0; i < this.allSteps.length; i++) {
+                    const step = this.allSteps[i];
+                    if (step.showIf) {
+                        const condition = step.showIf;
+                        if (!this.userData[condition.key] || this.userData[condition.key].value !== condition.value) {
+                            continue;
+                        }
+                    }
+                    if (visibleIndex === this.currentStep) {
+                        return step;
+                    }
+                    visibleIndex++;
+                }
+                return null;
+            }
+
+            countVisibleSteps() {
+                let count = 0;
+                for (let i = 0; i < this.allSteps.length; i++) {
+                    const step = this.allSteps[i];
+                    if (step.showIf) {
+                        const condition = step.showIf;
+                        if (!this.userData[condition.key] || this.userData[condition.key].value !== condition.value) {
+                            continue;
+                        }
+                    }
+                    count++;
+                }
+                return count;
+            }
+
+            showStep() {
+                const step = this.getCurrentVisibleStep();
+                
+                if (!step) {
+                    if (this.userData.area && this.userData.area.value === 'outro') {
+                        this.rejectCase();
+                        return;
+                    }
+                    this.finishTriagem();
+                    return;
+                }
+
+                const totalSteps = this.countVisibleSteps();
+                this.updateProgress(this.currentStep, totalSteps);
+                
+                this.addMessage('bot', step.question);
+
+                if (step.type === 'text') {
+                    this.input.style.display = 'block';
+                    this.optionsContainer.innerHTML = '';
+                    this.input.focus();
+                    this.input.placeholder = step.placeholder || 'Digite sua resposta...';
+                    this.input.onkeypress = (e) => {
+                        if (e.key === 'Enter' && this.input.value.trim()) {
+                            this.handleAnswer(this.input.value.trim(), step.key);
+                            this.input.value = '';
+                        }
+                    };
+                } else if (step.type === 'phone') {
+                    this.input.style.display = 'block';
+                    this.optionsContainer.innerHTML = '';
+                    this.input.type = 'tel';
+                    this.input.placeholder = step.placeholder;
+                    this.input.focus();
+                    this.input.onkeypress = (e) => {
+                        if (e.key === 'Enter' && this.input.value.trim()) {
+                            this.handleAnswer(this.input.value.trim(), step.key);
+                            this.input.value = '';
+                        }
+                    };
+                } else if (step.type === 'options') {
+                    this.input.style.display = 'none';
+                    this.renderOptions(step);
+                }
+            }
+
+            renderOptions(step) {
+                this.optionsContainer.innerHTML = '';
+                step.options.forEach(option => {
+                    const optionDiv = document.createElement('button');
+                    optionDiv.className = 'chatbot-option';
+                    optionDiv.innerHTML = `
+                        <span class="chatbot-option-icon">${option.icon}</span>
+                        <span class="chatbot-option-text">${option.text}</span>
+                    `;
+                    optionDiv.onclick = () => this.handleAnswer(option.text, step.key, option.value);
+                    this.optionsContainer.appendChild(optionDiv);
+                });
+            }
+
+            handleAnswer(answer, key, value) {
+                this.userData[key] = {
+                    text: answer,
+                    value: value || answer
+                };
+
+                this.addMessage('user', answer);
+                
+                if (key === 'nome') {
+                    setTimeout(() => {
+                        this.addMessage('bot', `Obrigado, ${answer}.`);
+                        setTimeout(() => {
+                            this.currentStep++;
+                            this.showStep();
+                        }, 500);
+                    }, 500);
+                } else {
+                    setTimeout(() => {
+                        this.currentStep++;
+                        this.showStep();
+                    }, 500);
+                }
+            }
+
+            addMessage(sender, text) {
+                const messageDiv = document.createElement('div');
+                messageDiv.className = `chatbot-message ${sender}`;
+                
+                if (sender === 'bot') {
+                    messageDiv.innerHTML = `
+                        <div class="chatbot-avatar">M</div>
+                        <div class="chatbot-bubble">${text}</div>
+                    `;
+                } else {
+                    messageDiv.innerHTML = `
+                        <div class="chatbot-bubble">${text}</div>
+                    `;
+                }
+
+                this.messagesContainer.appendChild(messageDiv);
+                this.messagesContainer.scrollTop = this.messagesContainer.scrollHeight;
+            }
+
+            updateProgress(current, total) {
+                const progress = Math.round(((current + 1) / total) * 100);
+                this.progressFill.style.width = progress + '%';
+                this.progressPercent.textContent = progress + '%';
+            }
+
+            rejectCase() {
+                this.updateProgress(100, 100);
+                
+                this.addMessage(
+                    'bot',
+                    `Compreendido.\n\nAgradecemos pelo contato! Infelizmente, a demanda mencionada não se enquadra nas especialidades atuais do escritório Marlos Maia.\n\nNosso foco está em:\n• Conflitos societários\n• Planejamento patrimonial / Holding\n• Execução fiscal\n• Direito do Trabalho\n\nRecomendamos que entre em contato com um especialista na sua área de interesse.\n\nAgradeço o tempo dispensado! 🙏`
+                );
+
+                const restartBtn = document.createElement('button');
+                restartBtn.className = 'chatbot-option';
+                restartBtn.innerHTML = `<span class="chatbot-option-text">🔄 Iniciar nova triagem</span>`;
+                restartBtn.onclick = () => this.startChat();
+                
+                this.optionsContainer.innerHTML = '';
+                this.optionsContainer.appendChild(restartBtn);
+            }
+
+            async finishTriagem() {
+                this.updateProgress(100, 100);
+                
+                this.addMessage(
+                    'bot',
+                    `A triagem indica que a sua demanda está alinhada com as especialidades do escritório.\n\nO Dr. Marlos Maia realizará a análise preliminar do seu caso em sessão reservada.\n\nInicie a conversa pelo WhatsApp para agendamento:`
+                );
+
+                const whatsappBtn = document.createElement('button');
+                whatsappBtn.className = 'chatbot-option';
+                whatsappBtn.style.background = '#25d366';
+                whatsappBtn.style.color = 'white';
+                whatsappBtn.style.borderColor = '#25d366';
+                whatsappBtn.style.marginTop = '12px';
+                whatsappBtn.innerHTML = `
+                    <span class="chatbot-option-icon">✓</span>
+                    <span class="chatbot-option-text">AGENDAR VIA WHATSAPP</span>
+                `;
+                whatsappBtn.onclick = () => this.openWhatsApp();
+                
+                this.optionsContainer.innerHTML = '';
+                this.optionsContainer.appendChild(whatsappBtn);
+
+                try {
+                    await this.sendDataToServer();
+                } catch (error) {
+                    console.error('Erro ao enviar dados:', error);
+                }
+
+                setTimeout(() => {
+                    const restartBtn = document.createElement('button');
+                    restartBtn.className = 'chatbot-option';
+                    restartBtn.innerHTML = `<span class="chatbot-option-text">🔄 Reiniciar triagem</span>`;
+                    restartBtn.onclick = () => this.startChat();
+                    this.optionsContainer.appendChild(restartBtn);
+                }, 1000);
+            }
+
+            openWhatsApp() {
+                const phone = this.userData.whatsapp.value.replace(/\D/g, '');
+                const message = `Olá Dr. Marlos! Sou ${this.userData.nome.text}, acabei de fazer sua triagem jurídica. Gostaria de agendar uma consultoria.`;
+                const encodedMessage = encodeURIComponent(message);
+                window.open(`https://wa.me/55${phone}?text=${encodedMessage}`, '_blank');
+            }
+
+            async sendDataToServer() {
+                try {
+                    const response = await fetch(this.apiUrl, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            nome: this.userData.nome.text,
+                            tipo: this.userData.tipo.value,
+                            posicao: this.userData.posicao?.value || 'N/A',
+                            porte: this.userData.porte?.value || 'N/A',
+                            area: this.userData.area.value,
+                            whatsapp: this.userData.whatsapp.value,
+                            dataTriagem: new Date().toISOString()
+                        })
+                    });
+
+                    if (response.ok) {
+                        console.log('✅ Dados enviados com sucesso!');
+                    }
+                } catch (error) {
+                    console.error('Erro ao enviar dados:', error);
+                }
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            new ChatbotIA();
+        });
+    </script>
 </body>
 </html>
