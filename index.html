@@ -827,364 +827,395 @@
         }
     </style>
 <script>
-        class ChatbotIA {
-            constructor() {
-                this.currentStep = 0;
-                this.userData = {};
-                this.apiUrl = 'http://localhost:3001/api/chatbot';
-                
-                this.allSteps = [
-                    {
-                        id: 'nome',
-                        question: 'Como é o seu nome completo?',
-                        type: 'text',
-                        key: 'nome',
-                        icon: '👤',
-                        required: true
-                    },
-                    {
-                        id: 'tipo',
-                        question: 'Você é pessoa física ou representante de empresa?',
-                        type: 'options',
-                        key: 'tipo',
-                        icon: '🔍',
-                        required: true,
-                        options: [
-                            { text: 'Pessoa física', value: 'pf', icon: '👤' },
-                            { text: 'Representante de empresa / Sócio / Holding', value: 'empresa', icon: '🏢' },
-                        ]
-                    },
-                    {
-                        id: 'posicao',
-                        question: 'Você atua como:',
-                        type: 'options',
-                        key: 'posicao',
-                        icon: '💼',
-                        showIf: { key: 'tipo', value: 'empresa' },
-                        required: true,
-                        options: [
-                            { text: 'Sócio ou administrador de empresa', value: 'socio', icon: '📊' },
-                            { text: 'Grupo empresarial / Holding', value: 'holding', icon: '🏢' },
-                        ]
-                    },
-                    {
-                        id: 'porte',
-                        question: 'Qual o porte da empresa ou volume patrimonial envolvido?',
-                        type: 'options',
-                        key: 'porte',
-                        icon: '📈',
-                        showIf: { key: 'tipo', value: 'empresa' },
-                        required: true,
-                        options: [
-                            { text: 'Pequena empresa / MEI', value: 'pequena', icon: '■' },
-                            { text: 'Empresa de médio porte', value: 'medio', icon: '■' },
-                            { text: 'Empresa de grande porte', value: 'grande', icon: '■' },
-                            { text: 'Patrimônio familiar relevante', value: 'patrimonio', icon: '💰' },
-                        ]
-                    },
-                    {
-                        id: 'area',
-                        question: 'Qual área melhor descreve a demanda?',
-                        type: 'options',
-                        key: 'area',
-                        icon: '⚖️',
-                        required: true,
-                        options: [
-                            { text: 'Conflito entre sócios', value: 'conflito', icon: '⚖️' },
-                            { text: 'Planejamento patrimonial / Holding', value: 'planejamento', icon: '🏛️' },
-                            { text: 'Execução fiscal / Receita Federal', value: 'fiscal', icon: '📋' },
-                            { text: 'Direito do Trabalho', value: 'trabalho', icon: '👷' },
-                            { text: 'Outro', value: 'outro', icon: '❓' },
-                        ]
-                    },
-                    {
-                        id: 'whatsapp',
-                        question: 'Informe seu WhatsApp com DDD:',
-                        type: 'phone',
-                        key: 'whatsapp',
-                        icon: '📱',
-                        required: true,
-                        placeholder: '(43) 9 9999-9999'
-                    }
-                ];
-
-                this.steps = this.allSteps;
-                this.initializeDOM();
-                this.bindEvents();
-                this.startChat();
-            }
-
-            initializeDOM() {
-                this.button = document.getElementById('chatbot-button');
-                this.window = document.getElementById('chatbot-window');
-                this.closeBtn = document.getElementById('chatbot-close');
-                this.messagesContainer = document.getElementById('chatbot-messages');
-                this.inputArea = document.getElementById('chatbot-input-area');
-                this.input = document.getElementById('chatbot-input');
-                this.optionsContainer = document.getElementById('chatbot-options');
-                this.progressFill = document.getElementById('chatbot-progress-fill');
-                this.progressPercent = document.getElementById('chatbot-percent');
-            }
-
-            bindEvents() {
-                this.button.addEventListener('click', () => this.toggleWindow());
-                this.closeBtn.addEventListener('click', () => this.toggleWindow());
-                this.input.addEventListener('keypress', (e) => {
-                    if (e.key === 'Enter') this.handleTextInput();
-                });
-            }
-
-            toggleWindow() {
-                this.window.classList.toggle('open');
-                this.button.classList.toggle('hidden');
-            }
-
-            startChat() {
-                this.currentStep = 0;
-                this.userData = {};
-                this.messagesContainer.innerHTML = '';
-                this.optionsContainer.innerHTML = '';
-                
-                this.addMessage(
-                    'bot',
-                    'Bom dia. Sou o assistente institucional do escritório Marlos Maia Advocacia\n\nPara conduzir a triagem inicial com precisão, precisarei de algumas informações.'
-                );
-                
-                setTimeout(() => this.showStep(), 800);
-            }
-
-            getCurrentVisibleStep() {
-                let visibleIndex = 0;
-                for (let i = 0; i < this.allSteps.length; i++) {
-                    const step = this.allSteps[i];
-                    if (step.showIf) {
-                        const condition = step.showIf;
-                        if (!this.userData[condition.key] || this.userData[condition.key].value !== condition.value) {
-                            continue;
-                        }
-                    }
-                    if (visibleIndex === this.currentStep) {
-                        return step;
-                    }
-                    visibleIndex++;
+    class ChatbotIA {
+        constructor() {
+            this.currentStep = 0;
+            this.userData = {};
+            this.apiUrl = 'http://localhost:3001/api/chatbot';
+            
+            this.allSteps = [
+                {
+                    id: 'nome',
+                    question: 'Como é o seu nome completo?',
+                    type: 'text',
+                    key: 'nome',
+                    icon: '👤',
+                    required: true
+                },
+                {
+                    id: 'tipo',
+                    question: 'Você é pessoa física ou representante de empresa?',
+                    type: 'options',
+                    key: 'tipo',
+                    icon: '🔍',
+                    required: true,
+                    options: [
+                        { text: 'Pessoa física', value: 'pf', icon: '👤' },
+                        { text: 'Representante de empresa / Sócio / Holding', value: 'empresa', icon: '🏢' },
+                    ]
+                },
+                {
+                    id: 'posicao',
+                    question: 'Você atua como:',
+                    type: 'options',
+                    key: 'posicao',
+                    icon: '💼',
+                    showIf: { key: 'tipo', value: 'empresa' },
+                    required: true,
+                    options: [
+                        { text: 'Sócio ou administrador de empresa', value: 'socio', icon: '📊' },
+                        { text: 'Grupo empresarial / Holding', value: 'holding', icon: '🏢' },
+                    ]
+                },
+                {
+                    id: 'porte',
+                    question: 'Qual o porte da empresa ou volume patrimonial envolvido?',
+                    type: 'options',
+                    key: 'porte',
+                    icon: '📈',
+                    showIf: { key: 'tipo', value: 'empresa' },
+                    required: true,
+                    options: [
+                        { text: 'Pequena empresa / MEI', value: 'pequena', icon: '■' },
+                        { text: 'Empresa de médio porte', value: 'medio', icon: '■' },
+                        { text: 'Empresa de grande porte', value: 'grande', icon: '■' },
+                        { text: 'Patrimônio familiar relevante', value: 'patrimonio', icon: '💰' },
+                    ]
+                },
+                {
+                    id: 'area',
+                    question: 'Qual área melhor descreve a demanda?',
+                    type: 'options',
+                    key: 'area',
+                    icon: '⚖️',
+                    required: true,
+                    options: [
+                        { text: 'Conflito entre sócios', value: 'conflito', icon: '⚖️' },
+                        { text: 'Planejamento patrimonial / Holding', value: 'planejamento', icon: '🏛️' },
+                        { text: 'Execução fiscal / Receita Federal', value: 'fiscal', icon: '📋' },
+                        { text: 'Direito do Trabalho', value: 'trabalho', icon: '👷' },
+                        { text: 'Outro', value: 'outro', icon: '❓' },
+                    ]
+                },
+                {
+                    id: 'whatsapp',
+                    question: 'Informe seu WhatsApp com DDD:',
+                    type: 'phone',
+                    key: 'whatsapp',
+                    icon: '📱',
+                    required: true,
+                    placeholder: '(43) 9 9999-9999'
                 }
-                return null;
-            }
-
-            countVisibleSteps() {
-                let count = 0;
-                for (let i = 0; i < this.allSteps.length; i++) {
-                    const step = this.allSteps[i];
-                    if (step.showIf) {
-                        const condition = step.showIf;
-                        if (!this.userData[condition.key] || this.userData[condition.key].value !== condition.value) {
-                            continue;
-                        }
+            ];
+ 
+            this.steps = this.allSteps;
+            this.initializeDOM();
+            this.bindEvents();
+            this.startChat();
+        }
+ 
+        initializeDOM() {
+            this.button = document.getElementById('chatbot-button');
+            this.window = document.getElementById('chatbot-window');
+            this.closeBtn = document.getElementById('chatbot-close');
+            this.messagesContainer = document.getElementById('chatbot-messages');
+            this.inputArea = document.getElementById('chatbot-input-area');
+            this.input = document.getElementById('chatbot-input');
+            this.optionsContainer = document.getElementById('chatbot-options');
+            this.progressFill = document.getElementById('chatbot-progress-fill');
+            this.progressPercent = document.getElementById('chatbot-percent');
+        }
+ 
+        bindEvents() {
+            this.button.addEventListener('click', () => this.toggleWindow());
+            this.closeBtn.addEventListener('click', () => this.toggleWindow());
+            this.input.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') this.handleTextInput();
+            });
+        }
+ 
+        toggleWindow() {
+            this.window.classList.toggle('open');
+            this.button.classList.toggle('hidden');
+        }
+ 
+        startChat() {
+            this.currentStep = 0;
+            this.userData = {};
+            this.messagesContainer.innerHTML = '';
+            this.optionsContainer.innerHTML = '';
+            
+            this.addMessage(
+                'bot',
+                'Bom dia. Sou o assistente institucional do escritório Marlos Maia Advocacia\n\nPara conduzir a triagem inicial com precisão, precisarei de algumas informações.'
+            );
+            
+            setTimeout(() => this.showStep(), 800);
+        }
+ 
+        getCurrentVisibleStep() {
+            let visibleIndex = 0;
+            for (let i = 0; i < this.allSteps.length; i++) {
+                const step = this.allSteps[i];
+                if (step.showIf) {
+                    const condition = step.showIf;
+                    if (!this.userData[condition.key] || this.userData[condition.key].value !== condition.value) {
+                        continue;
                     }
-                    count++;
                 }
-                return count;
+                if (visibleIndex === this.currentStep) {
+                    return step;
+                }
+                visibleIndex++;
             }
-
-            showStep() {
-                const step = this.getCurrentVisibleStep();
-                
-                if (!step) {
-                    if (this.userData.area && this.userData.area.value === 'outro') {
-                        this.rejectCase();
-                        return;
+            return null;
+        }
+ 
+        countVisibleSteps() {
+            let count = 0;
+            for (let i = 0; i < this.allSteps.length; i++) {
+                const step = this.allSteps[i];
+                if (step.showIf) {
+                    const condition = step.showIf;
+                    if (!this.userData[condition.key] || this.userData[condition.key].value !== condition.value) {
+                        continue;
                     }
-                    this.finishTriagem();
+                }
+                count++;
+            }
+            return count;
+        }
+ 
+        showStep() {
+            const step = this.getCurrentVisibleStep();
+            
+            if (!step) {
+                if (this.userData.area && this.userData.area.value === 'outro') {
+                    this.rejectCase();
                     return;
                 }
-
-                const totalSteps = this.countVisibleSteps();
-                this.updateProgress(this.currentStep, totalSteps);
-                
-                this.addMessage('bot', step.question);
-
-                if (step.type === 'text') {
-                    this.input.style.display = 'block';
-                    this.optionsContainer.innerHTML = '';
-                    this.input.focus();
-                    this.input.placeholder = step.placeholder || 'Digite sua resposta...';
-                    this.input.onkeypress = (e) => {
-                        if (e.key === 'Enter' && this.input.value.trim()) {
-                            this.handleAnswer(this.input.value.trim(), step.key);
-                            this.input.value = '';
-                        }
-                    };
-                } else if (step.type === 'phone') {
-                    this.input.style.display = 'block';
-                    this.optionsContainer.innerHTML = '';
-                    this.input.type = 'tel';
-                    this.input.placeholder = step.placeholder;
-                    this.input.focus();
-                    this.input.onkeypress = (e) => {
-                        if (e.key === 'Enter' && this.input.value.trim()) {
-                            this.handleAnswer(this.input.value.trim(), step.key);
-                            this.input.value = '';
-                        }
-                    };
-                } else if (step.type === 'options') {
-                    this.input.style.display = 'none';
-                    this.renderOptions(step);
-                }
+                this.finishTriagem();
+                return;
             }
-
-            renderOptions(step) {
+ 
+            const totalSteps = this.countVisibleSteps();
+            this.updateProgress(this.currentStep, totalSteps);
+            
+            this.addMessage('bot', step.question);
+ 
+            if (step.type === 'text') {
+                this.input.style.display = 'block';
                 this.optionsContainer.innerHTML = '';
-                step.options.forEach(option => {
-                    const optionDiv = document.createElement('button');
-                    optionDiv.className = 'chatbot-option';
-                    optionDiv.innerHTML = `
-                        <span class="chatbot-option-icon">${option.icon}</span>
-                        <span class="chatbot-option-text">${option.text}</span>
-                    `;
-                    optionDiv.onclick = () => this.handleAnswer(option.text, step.key, option.value);
-                    this.optionsContainer.appendChild(optionDiv);
-                });
-            }
-
-            handleAnswer(answer, key, value) {
-                this.userData[key] = {
-                    text: answer,
-                    value: value || answer
+                this.input.focus();
+                this.input.placeholder = step.placeholder || 'Digite sua resposta...';
+                this.input.onkeypress = (e) => {
+                    if (e.key === 'Enter' && this.input.value.trim()) {
+                        this.handleAnswer(this.input.value.trim(), step.key);
+                        this.input.value = '';
+                    }
                 };
-
-                this.addMessage('user', answer);
-                
-                if (key === 'nome') {
-                    setTimeout(() => {
-                        this.addMessage('bot', `Obrigado, ${answer}.`);
-                        setTimeout(() => {
-                            this.currentStep++;
-                            this.showStep();
-                        }, 500);
-                    }, 500);
-                } else {
+            } else if (step.type === 'phone') {
+                this.input.style.display = 'block';
+                this.optionsContainer.innerHTML = '';
+                this.input.type = 'tel';
+                this.input.placeholder = step.placeholder;
+                this.input.focus();
+                this.input.onkeypress = (e) => {
+                    if (e.key === 'Enter' && this.input.value.trim()) {
+                        this.handleAnswer(this.input.value.trim(), step.key);
+                        this.input.value = '';
+                    }
+                };
+            } else if (step.type === 'options') {
+                this.input.style.display = 'none';
+                this.renderOptions(step);
+            }
+        }
+ 
+        renderOptions(step) {
+            this.optionsContainer.innerHTML = '';
+            step.options.forEach(option => {
+                const optionDiv = document.createElement('button');
+                optionDiv.className = 'chatbot-option';
+                optionDiv.innerHTML = `
+                    <span class="chatbot-option-icon">${option.icon}</span>
+                    <span class="chatbot-option-text">${option.text}</span>
+                `;
+                optionDiv.onclick = () => this.handleAnswer(option.text, step.key, option.value);
+                this.optionsContainer.appendChild(optionDiv);
+            });
+        }
+ 
+        handleAnswer(answer, key, value) {
+            this.userData[key] = {
+                text: answer,
+                value: value || answer
+            };
+ 
+            this.addMessage('user', answer);
+            
+            if (key === 'nome') {
+                setTimeout(() => {
+                    this.addMessage('bot', `Obrigado, ${answer}.`);
                     setTimeout(() => {
                         this.currentStep++;
                         this.showStep();
                     }, 500);
-                }
-            }
-
-            addMessage(sender, text) {
-                const messageDiv = document.createElement('div');
-                messageDiv.className = `chatbot-message ${sender}`;
-                
-                if (sender === 'bot') {
-                    messageDiv.innerHTML = `
-                        <div class="chatbot-avatar">M</div>
-                        <div class="chatbot-bubble">${text}</div>
-                    `;
-                } else {
-                    messageDiv.innerHTML = `
-                        <div class="chatbot-bubble">${text}</div>
-                    `;
-                }
-
-                this.messagesContainer.appendChild(messageDiv);
-                this.messagesContainer.scrollTop = this.messagesContainer.scrollHeight;
-            }
-
-            updateProgress(current, total) {
-                const progress = Math.round(((current + 1) / total) * 100);
-                this.progressFill.style.width = progress + '%';
-                this.progressPercent.textContent = progress + '%';
-            }
-
-            rejectCase() {
-                this.updateProgress(100, 100);
-                
-                this.addMessage(
-                    'bot',
-                    `Compreendido.\n\nAgradecemos pelo contato! Infelizmente, a demanda mencionada não se enquadra nas especialidades atuais do escritório Marlos Maia.\n\nNosso foco está em:\n• Conflitos societários\n• Planejamento patrimonial / Holding\n• Execução fiscal\n• Direito do Trabalho\n\nRecomendamos que entre em contato com um especialista na sua área de interesse.\n\nAgradeço o tempo dispensado! 🙏`
-                );
-
-                const restartBtn = document.createElement('button');
-                restartBtn.className = 'chatbot-option';
-                restartBtn.innerHTML = `<span class="chatbot-option-text">🔄 Iniciar nova triagem</span>`;
-                restartBtn.onclick = () => this.startChat();
-                
-                this.optionsContainer.innerHTML = '';
-                this.optionsContainer.appendChild(restartBtn);
-            }
-
-            async finishTriagem() {
-                this.updateProgress(100, 100);
-                
-                this.addMessage(
-                    'bot',
-                    `A triagem indica que a sua demanda está alinhada com as especialidades do escritório.\n\nO Dr. Marlos Maia realizará a análise preliminar do seu caso em sessão reservada.\n\nInicie a conversa pelo WhatsApp para agendamento:`
-                );
-
-                const whatsappBtn = document.createElement('button');
-                whatsappBtn.className = 'chatbot-option';
-                whatsappBtn.style.background = '#25d366';
-                whatsappBtn.style.color = 'white';
-                whatsappBtn.style.borderColor = '#25d366';
-                whatsappBtn.style.marginTop = '12px';
-                whatsappBtn.innerHTML = `
-                    <span class="chatbot-option-icon">✓</span>
-                    <span class="chatbot-option-text">AGENDAR VIA WHATSAPP</span>
-                `;
-                whatsappBtn.onclick = () => this.openWhatsApp();
-                
-                this.optionsContainer.innerHTML = '';
-                this.optionsContainer.appendChild(whatsappBtn);
-
-                try {
-                    await this.sendDataToServer();
-                } catch (error) {
-                    console.error('Erro ao enviar dados:', error);
-                }
-
+                }, 500);
+            } else {
                 setTimeout(() => {
-                    const restartBtn = document.createElement('button');
-                    restartBtn.className = 'chatbot-option';
-                    restartBtn.innerHTML = `<span class="chatbot-option-text">🔄 Reiniciar triagem</span>`;
-                    restartBtn.onclick = () => this.startChat();
-                    this.optionsContainer.appendChild(restartBtn);
-                }, 1000);
-            }
-
-            openWhatsApp() {
-                const phone = this.userData.whatsapp.value.replace(/\D/g, '');
-                const message = `Olá Dr. Marlos! Sou ${this.userData.nome.text}, acabei de fazer sua triagem jurídica. Gostaria de agendar uma consultoria.`;
-                const encodedMessage = encodeURIComponent(message);
-                window.open(`https://wa.me/55${phone}?text=${encodedMessage}`, '_blank');
-            }
-
-            async sendDataToServer() {
-                try {
-                    const response = await fetch(this.apiUrl, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({
-                            nome: this.userData.nome.text,
-                            tipo: this.userData.tipo.value,
-                            posicao: this.userData.posicao?.value || 'N/A',
-                            porte: this.userData.porte?.value || 'N/A',
-                            area: this.userData.area.value,
-                            whatsapp: this.userData.whatsapp.value,
-                            dataTriagem: new Date().toISOString()
-                        })
-                    });
-
-                    if (response.ok) {
-                        console.log('✅ Dados enviados com sucesso!');
-                    }
-                } catch (error) {
-                    console.error('Erro ao enviar dados:', error);
-                }
+                    this.currentStep++;
+                    this.showStep();
+                }, 500);
             }
         }
-
-        document.addEventListener('DOMContentLoaded', () => {
-            new ChatbotIA();
-        });
-    </script>
+ 
+        addMessage(sender, text) {
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `chatbot-message ${sender}`;
+            
+            if (sender === 'bot') {
+                messageDiv.innerHTML = `
+                    <div class="chatbot-avatar">M</div>
+                    <div class="chatbot-bubble">${text}</div>
+                `;
+            } else {
+                messageDiv.innerHTML = `
+                    <div class="chatbot-bubble">${text}</div>
+                `;
+            }
+ 
+            this.messagesContainer.appendChild(messageDiv);
+            this.messagesContainer.scrollTop = this.messagesContainer.scrollHeight;
+        }
+ 
+        updateProgress(current, total) {
+            const progress = Math.round(((current + 1) / total) * 100);
+            this.progressFill.style.width = progress + '%';
+            this.progressPercent.textContent = progress + '%';
+        }
+ 
+        rejectCase() {
+            this.updateProgress(100, 100);
+            
+            this.addMessage(
+                'bot',
+                `Compreendido.\n\nAgradecemos pelo contato! Infelizmente, a demanda mencionada não se enquadra nas especialidades atuais do escritório Marlos Maia.\n\nNosso foco está em:\n• Conflitos societários\n• Planejamento patrimonial / Holding\n• Execução fiscal\n• Direito do Trabalho\n\nRecomendamos que entre em contato com um especialista na sua área de interesse.\n\nAgradeço o tempo dispensado! 🙏`
+            );
+ 
+            const restartBtn = document.createElement('button');
+            restartBtn.className = 'chatbot-option';
+            restartBtn.innerHTML = `<span class="chatbot-option-text">🔄 Iniciar nova triagem</span>`;
+            restartBtn.onclick = () => this.startChat();
+            
+            this.optionsContainer.innerHTML = '';
+            this.optionsContainer.appendChild(restartBtn);
+        }
+ 
+        // ===== GERA RESUMO DA TRIAGEM =====
+        gerarResumoTriagem() {
+            let resumo = '📋 *RESUMO DA TRIAGEM JURÍDICA*\n\n';
+            
+            resumo += `👤 *Nome:* ${this.userData.nome?.text || 'N/A'}\n`;
+            resumo += `🔍 *Tipo:* ${this.userData.tipo?.text || 'N/A'}\n`;
+            
+            if (this.userData.posicao) {
+                resumo += `💼 *Posição:* ${this.userData.posicao.text}\n`;
+            }
+            
+            if (this.userData.porte) {
+                resumo += `📈 *Porte:* ${this.userData.porte.text}\n`;
+            }
+            
+            resumo += `⚖️ *Demanda:* ${this.userData.area?.text || 'N/A'}\n`;
+            resumo += `📱 *WhatsApp:* ${this.userData.whatsapp?.value || 'N/A'}\n\n`;
+            resumo += `✅ Triagem realizada em: ${new Date().toLocaleDateString('pt-BR')} às ${new Date().toLocaleTimeString('pt-BR')}`;
+            
+            return resumo;
+        }
+ 
+        async finishTriagem() {
+            this.updateProgress(100, 100);
+            
+            this.addMessage(
+                'bot',
+                `A triagem indica que a sua demanda está alinhada com as especialidades do escritório.\n\nO Dr. Marlos Maia realizará a análise preliminar do seu caso em sessão reservada.\n\nInicie a conversa pelo WhatsApp para agendamento:`
+            );
+ 
+            const whatsappBtn = document.createElement('button');
+            whatsappBtn.className = 'chatbot-option';
+            whatsappBtn.style.background = '#25d366';
+            whatsappBtn.style.color = 'white';
+            whatsappBtn.style.borderColor = '#25d366';
+            whatsappBtn.style.marginTop = '12px';
+            whatsappBtn.innerHTML = `
+                <span class="chatbot-option-icon">✓</span>
+                <span class="chatbot-option-text">AGENDAR VIA WHATSAPP</span>
+            `;
+            whatsappBtn.onclick = () => this.openWhatsApp();
+            
+            this.optionsContainer.innerHTML = '';
+            this.optionsContainer.appendChild(whatsappBtn);
+ 
+            try {
+                await this.sendDataToServer();
+            } catch (error) {
+                console.error('Erro ao enviar dados:', error);
+            }
+ 
+            setTimeout(() => {
+                const restartBtn = document.createElement('button');
+                restartBtn.className = 'chatbot-option';
+                restartBtn.innerHTML = `<span class="chatbot-option-text">🔄 Reiniciar triagem</span>`;
+                restartBtn.onclick = () => this.startChat();
+                this.optionsContainer.appendChild(restartBtn);
+            }, 1000);
+        }
+ 
+        // ===== ABRE WHATSAPP COM RESUMO =====
+        openWhatsApp() {
+            // Gera o resumo da triagem
+            const resumo = this.gerarResumoTriagem();
+            
+            // Mensagem inicial
+            const mensagemInicial = `Olá Dr. Marlos! 👋\n\nAcabei de completar a triagem jurídica do seu site.\n\n`;
+            
+            // Combina mensagem + resumo
+            const mensagemCompleta = mensagemInicial + resumo;
+            
+            const phone = this.userData.whatsapp.value.replace(/\D/g, '');
+            const encodedMessage = encodeURIComponent(mensagemCompleta);
+            window.open(`https://wa.me/55${phone}?text=${encodedMessage}`, '_blank');
+        }
+ 
+        async sendDataToServer() {
+            try {
+                const response = await fetch(this.apiUrl, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        nome: this.userData.nome.text,
+                        tipo: this.userData.tipo.value,
+                        posicao: this.userData.posicao?.value || 'N/A',
+                        porte: this.userData.porte?.value || 'N/A',
+                        area: this.userData.area.value,
+                        whatsapp: this.userData.whatsapp.value,
+                        dataTriagem: new Date().toISOString()
+                    })
+                });
+ 
+                if (response.ok) {
+                    console.log('✅ Dados enviados com sucesso!');
+                }
+            } catch (error) {
+                console.error('Erro ao enviar dados:', error);
+            }
+        }
+    }
+ 
+    document.addEventListener('DOMContentLoaded', () => {
+        new ChatbotIA();
+    });
+</script>
 </body>
 </html>
