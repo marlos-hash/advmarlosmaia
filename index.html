@@ -907,13 +907,13 @@
                     placeholder: '(43) 9 9999-9999'
                 }
             ];
- 
+
             this.steps = this.allSteps;
             this.initializeDOM();
             this.bindEvents();
             this.startChat();
         }
- 
+
         initializeDOM() {
             this.button = document.getElementById('chatbot-button');
             this.window = document.getElementById('chatbot-window');
@@ -925,7 +925,7 @@
             this.progressFill = document.getElementById('chatbot-progress-fill');
             this.progressPercent = document.getElementById('chatbot-percent');
         }
- 
+
         bindEvents() {
             this.button.addEventListener('click', () => this.toggleWindow());
             this.closeBtn.addEventListener('click', () => this.toggleWindow());
@@ -933,12 +933,12 @@
                 if (e.key === 'Enter') this.handleTextInput();
             });
         }
- 
+
         toggleWindow() {
             this.window.classList.toggle('open');
             this.button.classList.toggle('hidden');
         }
- 
+
         startChat() {
             this.currentStep = 0;
             this.userData = {};
@@ -952,7 +952,7 @@
             
             setTimeout(() => this.showStep(), 800);
         }
- 
+
         getCurrentVisibleStep() {
             let visibleIndex = 0;
             for (let i = 0; i < this.allSteps.length; i++) {
@@ -970,7 +970,7 @@
             }
             return null;
         }
- 
+
         countVisibleSteps() {
             let count = 0;
             for (let i = 0; i < this.allSteps.length; i++) {
@@ -985,7 +985,7 @@
             }
             return count;
         }
- 
+
         showStep() {
             const step = this.getCurrentVisibleStep();
             
@@ -997,41 +997,64 @@
                 this.finishTriagem();
                 return;
             }
- 
+
             const totalSteps = this.countVisibleSteps();
             this.updateProgress(this.currentStep, totalSteps);
             
             this.addMessage('bot', step.question);
- 
-            if (step.type === 'text') {
+
+            if (step.type === 'text' || step.type === 'phone') {
                 this.input.style.display = 'block';
                 this.optionsContainer.innerHTML = '';
-                this.input.focus();
+                
+                if (step.type === 'phone') {
+                    this.input.type = 'tel';
+                } else {
+                    this.input.type = 'text';
+                }
+                
                 this.input.placeholder = step.placeholder || 'Digite sua resposta...';
+                setTimeout(() => this.input.focus(), 100);
+                
                 this.input.onkeypress = (e) => {
                     if (e.key === 'Enter' && this.input.value.trim()) {
                         this.handleAnswer(this.input.value.trim(), step.key);
                         this.input.value = '';
                     }
                 };
-            } else if (step.type === 'phone') {
-                this.input.style.display = 'block';
-                this.optionsContainer.innerHTML = '';
-                this.input.type = 'tel';
-                this.input.placeholder = step.placeholder;
-                this.input.focus();
-                this.input.onkeypress = (e) => {
-                    if (e.key === 'Enter' && this.input.value.trim()) {
-                        this.handleAnswer(this.input.value.trim(), step.key);
-                        this.input.value = '';
-                    }
-                };
+                
+                this.showSendButton(step.key);
             } else if (step.type === 'options') {
                 this.input.style.display = 'none';
                 this.renderOptions(step);
             }
         }
- 
+
+        showSendButton(stepKey) {
+            const oldBtn = document.getElementById('chatbot-send-btn');
+            if (oldBtn) oldBtn.remove();
+
+            const sendBtn = document.createElement('button');
+            sendBtn.id = 'chatbot-send-btn';
+            sendBtn.className = 'chatbot-option';
+            sendBtn.style.background = 'var(--secondary-color)';
+            sendBtn.style.color = 'var(--primary-color)';
+            sendBtn.style.borderColor = 'var(--secondary-color)';
+            sendBtn.style.fontWeight = 'bold';
+            sendBtn.style.marginTop = '8px';
+            sendBtn.innerHTML = `
+                <span class="chatbot-option-icon">➤</span>
+                <span class="chatbot-option-text">ENVIAR</span>
+            `;
+            sendBtn.onclick = () => {
+                if (this.input.value.trim()) {
+                    this.handleAnswer(this.input.value.trim(), stepKey);
+                    this.input.value = '';
+                }
+            };
+            this.optionsContainer.appendChild(sendBtn);
+        }
+
         renderOptions(step) {
             this.optionsContainer.innerHTML = '';
             step.options.forEach(option => {
@@ -1045,13 +1068,13 @@
                 this.optionsContainer.appendChild(optionDiv);
             });
         }
- 
+
         handleAnswer(answer, key, value) {
             this.userData[key] = {
                 text: answer,
                 value: value || answer
             };
- 
+
             this.addMessage('user', answer);
             
             if (key === 'nome') {
@@ -1069,7 +1092,7 @@
                 }, 500);
             }
         }
- 
+
         addMessage(sender, text) {
             const messageDiv = document.createElement('div');
             messageDiv.className = `chatbot-message ${sender}`;
@@ -1084,17 +1107,17 @@
                     <div class="chatbot-bubble">${text}</div>
                 `;
             }
- 
+
             this.messagesContainer.appendChild(messageDiv);
             this.messagesContainer.scrollTop = this.messagesContainer.scrollHeight;
         }
- 
+
         updateProgress(current, total) {
             const progress = Math.round(((current + 1) / total) * 100);
             this.progressFill.style.width = progress + '%';
             this.progressPercent.textContent = progress + '%';
         }
- 
+
         rejectCase() {
             this.updateProgress(100, 100);
             
@@ -1102,7 +1125,7 @@
                 'bot',
                 `Compreendido.\n\nAgradecemos pelo contato! Infelizmente, a demanda mencionada não se enquadra nas especialidades atuais do escritório Marlos Maia.\n\nNosso foco está em:\n• Conflitos societários\n• Planejamento patrimonial / Holding\n• Execução fiscal\n• Direito do Trabalho\n\nRecomendamos que entre em contato com um especialista na sua área de interesse.\n\nAgradeço o tempo dispensado! 🙏`
             );
- 
+
             const restartBtn = document.createElement('button');
             restartBtn.className = 'chatbot-option';
             restartBtn.innerHTML = `<span class="chatbot-option-text">🔄 Iniciar nova triagem</span>`;
@@ -1111,8 +1134,7 @@
             this.optionsContainer.innerHTML = '';
             this.optionsContainer.appendChild(restartBtn);
         }
- 
-        // ===== GERA RESUMO DA TRIAGEM =====
+
         gerarResumoTriagem() {
             let resumo = '📋 *RESUMO DA TRIAGEM JURÍDICA*\n\n';
             
@@ -1133,7 +1155,7 @@
             
             return resumo;
         }
- 
+
         async finishTriagem() {
             this.updateProgress(100, 100);
             
@@ -1141,7 +1163,7 @@
                 'bot',
                 `A triagem indica que a sua demanda está alinhada com as especialidades do escritório.\n\nO Dr. Marlos Maia realizará a análise preliminar do seu caso em sessão reservada.\n\nInicie a conversa pelo WhatsApp para agendamento:`
             );
- 
+
             const whatsappBtn = document.createElement('button');
             whatsappBtn.className = 'chatbot-option';
             whatsappBtn.style.background = '#25d366';
@@ -1156,13 +1178,13 @@
             
             this.optionsContainer.innerHTML = '';
             this.optionsContainer.appendChild(whatsappBtn);
- 
+
             try {
                 await this.sendDataToServer();
             } catch (error) {
                 console.error('Erro ao enviar dados:', error);
             }
- 
+
             setTimeout(() => {
                 const restartBtn = document.createElement('button');
                 restartBtn.className = 'chatbot-option';
@@ -1171,23 +1193,16 @@
                 this.optionsContainer.appendChild(restartBtn);
             }, 1000);
         }
- 
-        // ===== ABRE WHATSAPP COM RESUMO =====
+
         openWhatsApp() {
-            // Gera o resumo da triagem
-            const resumo = this.gerarResumoTriagem();
-            
-            // Mensagem inicial
-            const mensagemInicial = `Olá Dr. Marlos! 👋\n\nAcabei de completar a triagem jurídica do seu site.\n\n`;
-            
-            // Combina mensagem + resumo
-            const mensagemCompleta = mensagemInicial + resumo;
-            
             const phone = '5543988434318';
+            const resumo = this.gerarResumoTriagem();
+            const mensagemInicial = `Olá Dr. Marlos! 👋\n\nAcabei de completar a triagem jurídica do seu site.\n\n`;
+            const mensagemCompleta = mensagemInicial + resumo;
             const encodedMessage = encodeURIComponent(mensagemCompleta);
-            window.open(`https://wa.me/55${phone}?text=${encodedMessage}`, '_blank');
+            window.open(`https://wa.me/${phone}?text=${encodedMessage}`, '_blank');
         }
- 
+
         async sendDataToServer() {
             try {
                 const response = await fetch(this.apiUrl, {
@@ -1203,7 +1218,7 @@
                         dataTriagem: new Date().toISOString()
                     })
                 });
- 
+
                 if (response.ok) {
                     console.log('✅ Dados enviados com sucesso!');
                 }
@@ -1212,7 +1227,7 @@
             }
         }
     }
- 
+
     document.addEventListener('DOMContentLoaded', () => {
         new ChatbotIA();
     });
