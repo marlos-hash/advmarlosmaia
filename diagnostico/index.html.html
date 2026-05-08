@@ -883,8 +883,15 @@ function answer(q, resp) {
 function updateScore() {
   const nao = Object.values(answers).filter(v => v === 'nao').length;
   const total = Object.keys(answers).length;
+  const totalPerguntas = 11;
 
-  if(total < 3) return;
+  const progressBar = document.getElementById('progressBar');
+  if(progressBar) {
+    const percentual = (total / totalPerguntas) * 100;
+    progressBar.style.width = percentual + '%';
+  }
+
+  if(total < 1) return;
 
   const section = document.getElementById('scoreSection');
   section.classList.add('visible');
@@ -902,10 +909,7 @@ function updateScore() {
   document.getElementById('scoreBar').style.width = (nao * 10) + '%';
   document.getElementById('scoreBar').style.background = data.color;
   document.getElementById('scoreMessage').innerHTML = `<strong style="color:${data.color}">${data.label}</strong><br><br>${data.msg}`;
-
-  section.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
 }
-
 function submitForm() {
   const nome    = document.querySelector('input[placeholder="Seu nome"]').value.trim();
   const empresa = document.querySelector('input[placeholder="Nome da empresa"]').value.trim();
